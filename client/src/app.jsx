@@ -1,5 +1,6 @@
 import Taro, { Component } from '@tarojs/taro';
 import 'taro-ui/dist/style/index.scss';
+import dayjs from 'dayjs';
 import Index from './pages/index';
 
 import './app.less';
@@ -22,9 +23,19 @@ class App extends Component {
     cloud: true
   };
 
-  componentDidMount() {
+  async componentDidMount() {
     if (process.env.TARO_ENV === 'weapp') {
       Taro.cloud.init();
+      // 如果已经授权，则更新一下lastLogin
+      const authSettings = await Taro.getSetting();
+      if (authSettings.authSetting['scope.userInfo']) {
+        const { userInfo } = await Taro.getUserInfo();
+        console.log('%cuserInfo:', 'color: #0e93e0;background: #aaefe5;', userInfo);
+        await wx.cloud.callFunction({
+          name: 'setUsers',
+          data: { userInfo, updateObj: { lastLogin: dayjs().format('YYYY-MM-DD HH:mm:ss') } }
+        });
+      }
     }
   }
 
