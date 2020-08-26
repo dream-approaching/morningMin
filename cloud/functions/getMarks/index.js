@@ -32,17 +32,18 @@ exports.main = async (event, context) => {
       .where({
         openId: OPENID,
       })
+      .orderBy('markDate', 'desc')
       .skip(i * MAX_LIMIT)
       .limit(MAX_LIMIT)
       .get();
     markList.push(promise);
   }
   // 等待所有
-  return (await Promise.all(markList)).reduce((acc, cur) => {
+  const res = (await Promise.all(markList)).reduce((acc, cur) => {
     return {
       data: acc.data.concat(cur.data),
       errMsg: acc.errMsg,
-      total,
     };
   });
+  return { ...res, total };
 };
